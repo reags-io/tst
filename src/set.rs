@@ -1,6 +1,6 @@
-use crate::tst_map::{self, TSTMap};
+use crate::map::{self, TSTMap};
 use std::fmt::{self, Debug};
-use std::iter::{Map, FromIterator};
+use std::iter::{FromIterator, Map};
 
 /// A set based on a `TSTMap`.
 #[derive(Clone, PartialEq, Eq)]
@@ -11,18 +11,18 @@ pub struct TSTSet {
 /// An iterator over a `TSTSet`'s items.
 #[derive(Clone)]
 pub struct Iter<'a> {
-    iter: Map<tst_map::Iter<'a, ()>, fn((String, &'a ())) -> String>
+    iter: Map<map::Iter<'a, ()>, fn((String, &'a ())) -> String>,
 }
 
 /// An owning iterator over a `TSTSet`'s items.
 pub struct IntoIter {
-    iter: Map<tst_map::IntoIter<()>, fn((String, ())) -> String>
+    iter: Map<map::IntoIter<()>, fn((String, ())) -> String>,
 }
 
 /// `TSTSet` wild-card iterator.
 #[derive(Clone)]
 pub struct WildCardIter<'a> {
-    iter: Map<tst_map::WildCardIter<'a, ()>, fn( (String, &'a () )) -> String>,
+    iter: Map<map::WildCardIter<'a, ()>, fn((String, &'a ())) -> String>,
 }
 
 impl TSTSet {
@@ -35,7 +35,9 @@ impl TSTSet {
     ///
     /// let mut s: TSTSet = TSTSet::new();
     /// ```
-    pub fn new() -> Self { Default::default() }
+    pub fn new() -> Self {
+        Default::default()
+    }
 
     /// Returns the number of elements in the set.
     ///
@@ -49,7 +51,9 @@ impl TSTSet {
     /// s.insert("xxx");
     /// assert_eq!(s.len(), 1);
     /// ```
-    pub fn len(&self) -> usize { self.map.len() }
+    pub fn len(&self) -> usize {
+        self.map.len()
+    }
 
     /// Returns true if the set contains no elements.
     ///
@@ -63,7 +67,9 @@ impl TSTSet {
     /// s.insert("yyyx");
     /// assert!(!s.is_empty());
     /// ```
-    pub fn is_empty(&self) -> bool { self.len() == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// Clears the set, removing all values.
     ///
@@ -153,8 +159,12 @@ impl TSTSet {
     /// }
     /// ```
     pub fn iter(&self) -> Iter {
-        fn first<A, B>((a, _): (A, B)) -> A { a }
-        Iter { iter: self.map.iter().map(first) }
+        fn first<A, B>((a, _): (A, B)) -> A {
+            a
+        }
+        Iter {
+            iter: self.map.iter().map(first),
+        }
 
         //Iter { iter: self.map.keys() }
     }
@@ -177,8 +187,12 @@ impl TSTSet {
     /// }
     /// ```
     pub fn wildcard_iter(&self, pat: &str) -> WildCardIter {
-        fn first<A, B>((a, _): (A, B)) -> A { a }
-        WildCardIter { iter: self.map.wildcard_iter(pat).map(first) }
+        fn first<A, B>((a, _): (A, B)) -> A {
+            a
+        }
+        WildCardIter {
+            iter: self.map.wildcard_iter(pat).map(first),
+        }
     }
 
     /// Method returns longest prefix in the TSTSet.
@@ -224,8 +238,12 @@ impl TSTSet {
     /// assert_eq!("abc".to_string(), first_key);
     /// ```
     pub fn prefix_iter(&self, pref: &str) -> Iter {
-        fn first<A, B>((a, _): (A, B)) -> A { a }
-        Iter { iter: self.map.prefix_iter(pref).map(first) }
+        fn first<A, B>((a, _): (A, B)) -> A {
+            a
+        }
+        Iter {
+            iter: self.map.prefix_iter(pref).map(first),
+        }
     }
 }
 
@@ -250,8 +268,12 @@ impl IntoIterator for TSTSet {
     /// let vec: Vec<String> = set.into_iter().collect();
     /// ```
     fn into_iter(self) -> IntoIter {
-        fn first<A, B>((a, _): (A, B)) -> A { a }
-        IntoIter { iter: self.map.into_iter().map(first) }
+        fn first<A, B>((a, _): (A, B)) -> A {
+            a
+        }
+        IntoIter {
+            iter: self.map.into_iter().map(first),
+        }
     }
 }
 
@@ -267,7 +289,7 @@ impl<'x> FromIterator<&'x str> for TSTSet {
 
 impl<'x> Extend<&'x str> for TSTSet {
     #[inline]
-    fn extend<I: IntoIterator<Item=&'x str>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item = &'x str>>(&mut self, iter: I) {
         for k in iter {
             self.insert(k);
         }
@@ -286,7 +308,9 @@ impl Default for TSTSet {
     /// ```
 
     fn default() -> Self {
-        TSTSet { map: Default::default() }
+        TSTSet {
+            map: Default::default(),
+        }
     }
 }
 
@@ -299,24 +323,38 @@ impl Debug for TSTSet {
 impl<'a> Iterator for Iter<'a> {
     type Item = String;
 
-    fn next(&mut self) -> Option<String> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<String> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 impl Iterator for IntoIter {
     type Item = String;
 
-    fn next(&mut self) -> Option<String> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<String> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 impl ExactSizeIterator for IntoIter {
-    fn len(&self) -> usize { self.iter.len() }
+    fn len(&self) -> usize {
+        self.iter.len()
+    }
 }
 
 impl<'a> Iterator for WildCardIter<'a> {
     type Item = String;
 
-    fn next(&mut self) -> Option<String> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<String> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }

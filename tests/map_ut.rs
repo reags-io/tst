@@ -1,7 +1,8 @@
-#[macro_use] extern crate tst;
+#[macro_use]
+extern crate tst;
 
+use self::tst::map::Entry::*;
 use self::tst::TSTMap;
-use self::tst::tst_map::Entry::*;
 use std::iter::FromIterator;
 
 fn prepare_data() -> TSTMap<i32> {
@@ -75,7 +76,10 @@ fn insert_string_as_value() {
 fn insert_vec_as_value() {
     let mut m = TSTMap::<Vec<String>>::new();
 
-    assert_eq!(None, m.insert("abc", vec!["xxxx".to_owned(), "1234STRING".to_owned()]));
+    assert_eq!(
+        None,
+        m.insert("abc", vec!["xxxx".to_owned(), "1234STRING".to_owned()])
+    );
     assert_eq!(vec!["xxxx".to_owned(), "1234STRING".to_owned()], m["abc"]);
     assert_eq!(1, m.len());
 }
@@ -195,7 +199,7 @@ fn entry_vacant() {
     match m.entry("abcdg") {
         Vacant(entry) => {
             assert_eq!(100, *entry.insert(100));
-        },
+        }
         Occupied(_) => unreachable!(),
     }
     assert_eq!(Some(&100), m.get("abcdg"));
@@ -400,7 +404,10 @@ fn format() {
     m.insert("abcdefghjkik", -169_874);
 
     let m_str = format!("{:?}", m);
-    assert_eq!("{\"abc\": 2, \"abcdefghjkik\": -169874, \"abd\": 1, \"abdd\": 4}", m_str);
+    assert_eq!(
+        "{\"abc\": 2, \"abcdefghjkik\": -169874, \"abd\": 1, \"abdd\": 4}",
+        m_str
+    );
 }
 
 #[test]
@@ -446,12 +453,12 @@ fn into_iter() {
         "aa" => 13,
     };
     let vec = m.into_iter().collect::<Vec<(String, i32)>>();
-    let orig = vec! {
+    let orig = vec![
         ("a".to_string(), 1),
         ("aa".to_string(), 13),
         ("b".to_string(), 2),
         ("c".to_string(), 4),
-    };
+    ];
     assert_eq!(orig, vec);
 }
 
@@ -465,13 +472,7 @@ fn from_iterator_empty() {
 
 #[test]
 fn from_iterator() {
-    let vec = vec! {
-        ("b", 2),
-        ("a", 1),
-        ("c", 4),
-        ("a", 100),
-        ("aa", 13),
-    };
+    let vec = vec![("b", 2), ("a", 1), ("c", 4), ("a", 100), ("aa", 13)];
 
     let m = TSTMap::from_iter(vec);
     let orig = tstmap! {
@@ -488,13 +489,7 @@ fn extend() {
     let mut m = tstmap! {
         "a" => 13,
     };
-    let vec = vec! {
-        ("b", 2),
-        ("a", 1),
-        ("c", 4),
-        ("a", 100),
-        ("aa", 13),
-    };
+    let vec = vec![("b", 2), ("a", 1), ("c", 4), ("a", 100), ("aa", 13)];
     m.extend(vec);
     let orig = tstmap! {
         "a" => 100,
@@ -534,7 +529,10 @@ fn prefix_iterator() {
     for x in m.prefix_iter("fir") {
         m_str.push_str(&format!("{:?}", x));
     }
-    assert_eq!("(\"first\", 1)(\"firstsecond\", 12)(\"firstthird\", 3)", m_str);
+    assert_eq!(
+        "(\"first\", 1)(\"firstsecond\", 12)(\"firstthird\", 3)",
+        m_str
+    );
 }
 
 #[test]
@@ -617,7 +615,7 @@ fn values_iterator() {
 
 #[test]
 fn wildcard_iter_simple() {
-    let m = tstmap!{
+    let m = tstmap! {
         "x" => 1,
         "y" => 2,
     };
@@ -643,7 +641,7 @@ fn wildcard_iter() {
 
 #[test]
 fn wildcard_iter_dot_at_begin() {
-    let m = tstmap!{
+    let m = tstmap! {
         "bac" => 1,
         "aac" => 2,
         "cac" => 3,
@@ -659,7 +657,7 @@ fn wildcard_iter_dot_at_begin() {
 
 #[test]
 fn wildcard_iter_dot_at_end() {
-    let m = tstmap!{
+    let m = tstmap! {
         "bac" => 1,
         "aac" => 2,
         "bax" => 3,
@@ -675,7 +673,7 @@ fn wildcard_iter_dot_at_end() {
 
 #[test]
 fn wildcard_iter_empty() {
-    let m = tstmap!{
+    let m = tstmap! {
         "BY" => 1,
         "BYE" => 2,
     };

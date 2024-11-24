@@ -1,11 +1,13 @@
+use self::Entry::*;
+use super::node::{BoxedNode, Node, NodeRef, NodeRefMut};
+use super::traverse::{
+    self, DropTraverse, IntoTraverse, Traverse, ValuesTraverse, WildCardTraverse,
+};
+use std::default::Default;
+use std::fmt::{self, Debug};
+use std::iter::{FromIterator, Map};
 use std::mem;
 use std::ops;
-use std::fmt::{self, Debug};
-use std::default::Default;
-use self::Entry::*;
-use std::iter::{Map, FromIterator};
-use super::node::{Node, NodeRef, NodeRefMut, BoxedNode};
-use super::traverse::{self, Traverse, ValuesTraverse, IntoTraverse, WildCardTraverse, DropTraverse};
 
 ///
 /// Symbol table with string keys, implemented using a ternary search
@@ -52,8 +54,8 @@ use super::traverse::{self, Traverse, ValuesTraverse, IntoTraverse, WildCardTrav
 /// Root struct for `TSTMap`, which holds root and size.
 #[derive(Clone, PartialEq, Eq)]
 pub struct TSTMap<Value> {
-    root: BoxedNode<Value>,
-    size: usize,
+    pub root: BoxedNode<Value>,
+    pub size: usize,
 }
 
 impl<Value> TSTMap<Value> {
@@ -81,7 +83,9 @@ impl<Value> TSTMap<Value> {
     /// m.insert("x", 1);
     /// assert_eq!(2, m.len());
     /// ```
-    pub fn len(&self) -> usize { self.size }
+    pub fn len(&self) -> usize {
+        self.size
+    }
 
     /// Inserts an element at key `key` with value `val`.
     ///
@@ -205,7 +209,7 @@ impl<Value> TSTMap<Value> {
     /// assert!(!m.contains_key("ab"));
     /// assert!(m.contains_key("abc"))
     /// ```
-     #[inline]
+    #[inline]
     pub fn contains_key(&self, key: &str) -> bool {
         self.get(key).is_some()
     }
@@ -224,7 +228,9 @@ impl<Value> TSTMap<Value> {
     /// assert!(!m.is_empty());
     /// ```
     #[inline]
-    pub fn is_empty(&self) -> bool { self.size == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 
     /// Clears the `TSTMap`.
     ///
@@ -241,7 +247,9 @@ impl<Value> TSTMap<Value> {
     /// assert!(m.is_empty());
     /// assert_eq!(None, m.get("abc"));
     /// ```
-    pub fn clear(&mut self) { *self = TSTMap::<Value>::new(); }
+    pub fn clear(&mut self) {
+        *self = TSTMap::<Value>::new();
+    }
 
     /// An iterator returning all nodes matching wildcard pattern `pat`.
     /// Iterator element type is (String, V)
@@ -404,8 +412,12 @@ impl<Value> TSTMap<Value> {
     /// }
     /// ```
     pub fn keys(&self) -> KeysIter<Value> {
-        fn first<A, B>((k, _): (A, B)) -> A { k }
-        KeysIter { iter: self.iter().map(first) }
+        fn first<A, B>((k, _): (A, B)) -> A {
+            k
+        }
+        KeysIter {
+            iter: self.iter().map(first),
+        }
     }
 
     /// An iterator visiting all values in arbitrary order.
@@ -426,7 +438,9 @@ impl<Value> TSTMap<Value> {
     /// }
     /// ```
     pub fn values(&self) -> ValuesIter<Value> {
-        ValuesIter { iter: ValuesTraverse::new(self.root.as_ref(), self.len(), self.len()) }
+        ValuesIter {
+            iter: ValuesTraverse::new(self.root.as_ref(), self.len(), self.len()),
+        }
     }
 }
 
@@ -490,7 +504,7 @@ impl<'x, Value> FromIterator<(&'x str, Value)> for TSTMap<Value> {
 
 impl<'x, Value> Extend<(&'x str, Value)> for TSTMap<Value> {
     #[inline]
-    fn extend<I: IntoIterator<Item=(&'x str, Value)>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item = (&'x str, Value)>>(&mut self, iter: I) {
         for (k, v) in iter {
             self.insert(k, v);
         }
@@ -516,7 +530,7 @@ impl<Value> Drop for TSTMap<Value> {
     fn drop(&mut self) {
         let root = self.root.take();
         let mut iter = DropTraverse::new(root);
-        for _ in iter.next() { }
+        for _ in iter.next() {}
     }
 }
 
@@ -600,7 +614,9 @@ impl<'x, Value> Iterator for IterMut<'x, Value> {
         // just add mut, avoid copy-paste
         unsafe { mem::transmute(self.iter.next()) }
     }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 /// `TSTMap` keys iterator
@@ -609,22 +625,30 @@ pub struct KeysIter<'x, Value: 'x> {
     iter: Map<Iter<'x, Value>, fn((String, &'x Value)) -> String>,
 }
 
-impl<'x, Value:'x> Iterator for KeysIter<'x, Value> {
+impl<'x, Value: 'x> Iterator for KeysIter<'x, Value> {
     type Item = String;
-    fn next(&mut self) -> Option<String> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<String> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 /// `TSTMap` values iterator
 #[derive(Clone)]
-pub struct ValuesIter<'x, Value:'x> {
+pub struct ValuesIter<'x, Value: 'x> {
     iter: ValuesTraverse<'x, Value>,
 }
 
-impl<'x, Value:'x> Iterator for ValuesIter<'x, Value> {
+impl<'x, Value: 'x> Iterator for ValuesIter<'x, Value> {
     type Item = &'x Value;
-    fn next(&mut self) -> Option<&'x Value> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<&'x Value> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 /// `TSTMap` wild-card iterator.
@@ -643,8 +667,12 @@ impl<'x, Value> WildCardIter<'x, Value> {
 
 impl<'x, Value> Iterator for WildCardIter<'x, Value> {
     type Item = (String, &'x Value);
-    fn next(&mut self) -> Option<(String, &'x Value)> { self.iter.next() }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<(String, &'x Value)> {
+        self.iter.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 /// `TSTMap` wild-card mutable iterator.
@@ -663,8 +691,12 @@ impl<'x, Value> WildCardIterMut<'x, Value> {
 
 impl<'x, Value> Iterator for WildCardIterMut<'x, Value> {
     type Item = (String, &'x mut Value);
-    fn next(&mut self) -> Option<(String, &'x mut Value)> { unsafe { mem::transmute(self.iter.next()) } }
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn next(&mut self) -> Option<(String, &'x mut Value)> {
+        unsafe { mem::transmute(self.iter.next()) }
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 /// `TSTMap` consuming iterator
@@ -688,11 +720,15 @@ impl<Value> Iterator for IntoIter<Value> {
     fn next(&mut self) -> Option<(String, Value)> {
         self.iter.next()
     }
-    fn size_hint(&self) -> (usize, Option<usize>) { (self.iter.size, Some(self.iter.size)) }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.iter.size, Some(self.iter.size))
+    }
 }
 
 impl<Value> ExactSizeIterator for IntoIter<Value> {
-    fn len(&self) -> usize { self.iter.size }
+    fn len(&self) -> usize {
+        self.iter.size
+    }
 }
 
 //

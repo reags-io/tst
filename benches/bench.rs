@@ -3,8 +3,8 @@
 extern crate test;
 
 extern crate tst;
-use self::tst::TSTMap;
 use self::test::Bencher;
+use self::tst::TSTMap;
 use std::str;
 
 fn prepare() -> TSTMap<i32> {
@@ -13,11 +13,13 @@ fn prepare() -> TSTMap<i32> {
     m.insert(str::from_utf8(key).unwrap(), 13);
 
     fn fill(m: &mut TSTMap<i32>, key: &mut [u8], i: usize) {
-        if i >= key.len() { return; }
-        for ch in &[b'b',b'a',b'c'] {
+        if i >= key.len() {
+            return;
+        }
+        for ch in &[b'b', b'a', b'c'] {
             key[i] = *ch;
             m.insert(str::from_utf8(key).unwrap(), 13);
-            fill(m, key, i+1);
+            fill(m, key, i + 1);
         }
     }
     fill(&mut m, &mut key, 0);

@@ -72,19 +72,11 @@ macro_rules! tstset {
 
 extern crate core;
 
-pub use tst_map::TSTMap;
-pub use tst_set::TSTSet;
-
+pub mod map;
 /// TST container map and set implementation.
-mod node;
-mod traverse;
-mod map;
-mod set;
+pub mod node;
+pub mod set;
+pub mod traverse;
 
-pub mod tst_map {
-    pub use crate::map::*;
-}
-
-pub mod tst_set {
-    pub use crate::set::*;
-}
+pub use map::TSTMap;
+pub use set::TSTSet;
