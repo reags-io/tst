@@ -746,19 +746,6 @@ fn not_eq() {
 }
 
 #[test]
-fn not_eq_different_order() {
-    let mut m1 = TSTMap::<i32>::new();
-    let mut m2 = TSTMap::<i32>::new();
-
-    m2.insert("abcdef", 100);
-    m2.insert("xxx", 2);
-    m1.insert("xxx", 2);
-    m1.insert("abcdef", 100);
-
-    assert!(m1 != m2);
-}
-
-#[test]
 fn not_eq_only_value() {
     let mut m1 = TSTMap::<i32>::new();
     let mut m2 = TSTMap::<i32>::new();

@@ -1,3 +1,5 @@
+use typed_arena::Arena;
+
 use self::Entry::*;
 use super::node::{BoxedNode, Node, NodeRef, NodeRefMut};
 use super::traverse::{
@@ -52,10 +54,28 @@ use std::ops;
 // by design TSTMap depends on order of inserts in it, not only on keys and data itself
 
 /// Root struct for `TSTMap`, which holds root and size.
-#[derive(Clone, PartialEq, Eq)]
 pub struct TSTMap<Value> {
+    pub pool: Arena<Node<Value>>,
     pub root: BoxedNode<Value>,
     pub size: usize,
+}
+
+impl<Value: PartialEq> PartialEq for TSTMap<Value> {
+    fn eq(&self, other: &Self) -> bool {
+        self.iter().eq(other.iter())
+    }
+}
+
+impl<Value: Eq> Eq for TSTMap<Value> {}
+
+impl<Value: Clone> Clone for TSTMap<Value> {
+    fn clone(&self) -> Self {
+        let mut new = TSTMap::<Value>::new();
+        for (k, v) in self.iter() {
+            new.insert(&k, v.clone());
+        }
+        new
+    }
 }
 
 impl<Value> TSTMap<Value> {
@@ -133,7 +153,7 @@ impl<Value> TSTMap<Value> {
     pub fn entry(&mut self, key: &str) -> Entry<Value> {
         assert!(!key.is_empty(), "Empty key");
         let l = &mut self.size;
-        let cur = traverse::insert(self.root.as_mut(), key);
+        let cur = traverse::insert(self.root.as_mut(), key, &mut self.pool);
         Entry::<Value>::new(cur, l)
     }
 
@@ -550,6 +570,7 @@ impl<Value> Default for TSTMap<Value> {
     /// ```
     fn default() -> Self {
         TSTMap {
+            pool: Arena::new(),
             root: Default::default(),
             size: 0,
         }
