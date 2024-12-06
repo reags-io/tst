@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use typed_arena::Arena;
 
 use crate::node::NodeAllocator;
@@ -58,7 +58,7 @@ use std::ops;
 
 /// Root struct for `TSTMap`, which holds root and size.
 pub struct TSTMap<Value> {
-    pub pool: Box<dyn NodeAllocator<Value>>,
+    pub pool: NodeArenaAllocator<Value>,
     pub root: BoxedNode<Value>,
     pub size: usize,
 }
@@ -156,7 +156,7 @@ impl<Value> TSTMap<Value> {
     pub fn entry(&mut self, key: &str) -> Entry<Value> {
         assert!(!key.is_empty(), "Empty key");
         let l = &mut self.size;
-        let cur = traverse::insert(self.root.as_mut(), key, self.pool.as_mut());
+        let cur = traverse::insert(self.root.as_mut(), key, &mut self.pool);
         Entry::<Value>::new(cur, l)
     }
 
@@ -563,7 +563,10 @@ impl<Value: Debug> Debug for TSTMap<Value> {
     }
 }
 
-struct NodeArenaAllocator<Value> {
+unsafe impl<Value: Send> Send for NodeArenaAllocator<Value> {}
+unsafe impl<Value: Sync> Sync for NodeArenaAllocator<Value> {}
+
+pub struct NodeArenaAllocator<Value> {
     pool: RwLock<Arena<Node<Value>>>,
 }
 
@@ -592,7 +595,7 @@ impl<Value> Default for TSTMap<Value> {
     /// ```
     fn default() -> Self {
         TSTMap {
-            pool: Box::new(NodeArenaAllocator::default()),
+            pool: NodeArenaAllocator::default(),
             root: Default::default(),
             size: 0,
         }
