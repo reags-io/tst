@@ -5,8 +5,7 @@ use std::fmt::{self, Debug};
 use std::mem;
 use std::ops::Deref;
 
-use typed_arena::Arena;
-
+use bumpalo_herd::Herd;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Node<Value> {
     pub lt: BoxedNode<Value>,
@@ -43,9 +42,9 @@ impl<Value> Default for BoxedNode<Value> {
 }
 
 impl<Value> BoxedNode<Value> {
-    pub fn new(ch: char, pool: &mut Arena<Node<Value>>) -> BoxedNode<Value> {
+    pub fn new(ch: char, pool: &mut Herd) -> BoxedNode<Value> {
         BoxedNode {
-            ptr: Some(pool.alloc(Node::new(ch))),
+            ptr: Some(pool.get().alloc(Node::new(ch))),
         }
     }
 

@@ -1,4 +1,4 @@
-use typed_arena::Arena;
+use bumpalo_herd::Herd;
 
 use self::Entry::*;
 use super::node::{BoxedNode, Node, NodeRef, NodeRefMut};
@@ -55,7 +55,7 @@ use std::ops;
 
 /// Root struct for `TSTMap`, which holds root and size.
 pub struct TSTMap<Value> {
-    pub pool: Arena<Node<Value>>,
+    pub pool: Herd,
     pub root: BoxedNode<Value>,
     pub size: usize,
 }
@@ -570,7 +570,7 @@ impl<Value> Default for TSTMap<Value> {
     /// ```
     fn default() -> Self {
         TSTMap {
-            pool: Arena::new(),
+            pool: Herd::new(),
             root: Default::default(),
             size: 0,
         }
