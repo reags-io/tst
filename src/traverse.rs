@@ -142,12 +142,12 @@ impl<'x, Value> Default for Traverse<'x, Value> {
 }
 
 pub struct IntoTraverse<Value> {
-    stack: Trace<TraverseEntry<(String, Option<*mut Node<Value>>), (String, Value)>>,
+    stack: Trace<TraverseEntry<(String, Option<*const Node<Value>>), (String, Value)>>,
     pub size: usize,
 }
 
 impl<Value> IntoTraverse<Value> {
-    pub fn new(node: Option<*mut Node<Value>>, size: usize) -> Self {
+    pub fn new(node: Option<*const Node<Value>>, size: usize) -> Self {
         IntoTraverse {
             stack: Trace {
                 stack: vec![TraverseEntry::Node(("".to_string(), node))],
@@ -166,7 +166,7 @@ impl<Value> IntoTraverse<Value> {
                 TraverseEntry::Node((prefix, node)) => match node {
                     None => {}
                     Some(ref cur) => {
-                        let cur = unsafe { &mut **cur };
+                        let cur = unsafe { &mut *(*cur as *mut Node<Value>) };
                         if cur.gt.is_some() {
                             self.stack
                                 .push(TraverseEntry::Node((prefix.clone(), cur.gt.take())));
@@ -200,11 +200,11 @@ impl<Value> IntoTraverse<Value> {
 }
 
 pub struct DropTraverse<Value> {
-    stack: Trace<TraverseEntry<Option<*mut Node<Value>>, Value>>,
+    stack: Trace<TraverseEntry<Option<*const Node<Value>>, Value>>,
 }
 
 impl<Value> DropTraverse<Value> {
-    pub fn new(node: Option<*mut Node<Value>>) -> Self {
+    pub fn new(node: Option<*const Node<Value>>) -> Self {
         DropTraverse {
             stack: Trace {
                 stack: vec![TraverseEntry::Node(node)],
@@ -221,7 +221,7 @@ impl<Value> DropTraverse<Value> {
                 TraverseEntry::Node(node) => match node {
                     None => {}
                     Some(ref cur) => {
-                        let cur = unsafe { &mut **cur };
+                        let cur = unsafe { &mut *(*cur as *mut Node<Value>) };
                         if cur.gt.is_some() {
                             self.stack.push(TraverseEntry::Node(cur.gt.take()));
                         }
@@ -393,7 +393,7 @@ fn lookup_next_mut<'x, Value>(
     match node.as_mut().ptr {
         None => CompareResult::NotFound,
         Some(ref cur) => {
-            let cur = unsafe { &mut **cur };
+            let cur = unsafe { &mut *(*cur as *mut Node<Value>) };
             match ch.cmp(&cur.c) {
                 Ordering::Less => CompareResult::GoLeftOrRight(cur.lt.as_mut()),
                 Ordering::Greater => CompareResult::GoLeftOrRight(cur.gt.as_mut()),
