@@ -393,7 +393,7 @@ fn lookup_next_mut<'x, Value>(
     match node.as_mut().ptr {
         None => CompareResult::NotFound,
         Some(ref cur) => {
-            let cur = unsafe { &mut **cur };
+            let cur = unsafe { &mut *(*cur as *mut Node<Value>) };
             match ch.cmp(&cur.c) {
                 Ordering::Less => CompareResult::GoLeftOrRight(cur.lt.as_mut()),
                 Ordering::Greater => CompareResult::GoLeftOrRight(cur.gt.as_mut()),

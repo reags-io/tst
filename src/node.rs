@@ -17,7 +17,8 @@ pub struct Node<Value> {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BoxedNode<Value> {
-    pub ptr: Option<*mut Node<Value>>,
+    pub ptr: Option<usize>,
+    _marker: PhantomData<Value>,
 }
 
 pub struct NodeRef<'x, Value: 'x> {
@@ -37,27 +38,31 @@ pub struct BoxedNodeRefMut<'x, Value: 'x> {
 
 impl<Value> Default for BoxedNode<Value> {
     fn default() -> BoxedNode<Value> {
-        BoxedNode { ptr: None }
+        BoxedNode {
+            ptr: None,
+            _marker: Default::default(),
+        }
     }
 }
 
 impl<Value> BoxedNode<Value> {
     pub fn new(ch: char, pool: &mut Herd) -> BoxedNode<Value> {
         BoxedNode {
-            ptr: Some(pool.get().alloc(Node::new(ch))),
+            ptr: Some((pool.get().alloc(Node::new(ch)) as *mut Node<Value>) as usize),
+            _marker: Default::default(),
         }
     }
 
     fn as_ptr(&self) -> *const Node<Value> {
         match self.ptr {
-            Some(ptr) => ptr,
+            Some(ptr) => ptr as *const Node<Value>,
             None => ptr::null(),
         }
     }
 
     fn as_ptr_mut(&mut self) -> *mut Node<Value> {
         match self.ptr {
-            Some(ptr) => ptr,
+            Some(ptr) => ptr as *mut Node<Value>,
             None => ptr::null_mut(),
         }
     }
@@ -65,7 +70,7 @@ impl<Value> BoxedNode<Value> {
     fn as_node_ref_mut(&mut self) -> &mut Node<Value> {
         match self.ptr {
             None => unreachable!(),
-            Some(ptr) => unsafe { ptr.as_mut().unwrap() },
+            Some(ptr) => unsafe { (ptr as *mut Node<Value>).as_mut().unwrap() },
         }
     }
 
@@ -95,7 +100,7 @@ impl<Value> BoxedNode<Value> {
     }
 
     pub fn take(&mut self) -> Option<*mut Node<Value>> {
-        self.ptr.take()
+        self.ptr.take().map(|ptr| ptr as *mut Node<Value>)
     }
 }
 
