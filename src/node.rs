@@ -5,8 +5,6 @@ use std::fmt::{self, Debug};
 use std::mem;
 use std::ops::Deref;
 
-use typed_arena::Arena;
-
 #[derive(Clone, PartialEq, Eq)]
 pub struct Node<Value> {
     pub lt: BoxedNode<Value>,
@@ -42,8 +40,12 @@ impl<Value> Default for BoxedNode<Value> {
     }
 }
 
+pub trait NodeAllocator<Value> {
+    fn alloc(&mut self, node: Node<Value>) -> *mut Node<Value>;
+}
+
 impl<Value> BoxedNode<Value> {
-    pub fn new(ch: char, pool: &mut Arena<Node<Value>>) -> BoxedNode<Value> {
+    pub fn new(ch: char, pool: &mut dyn NodeAllocator<Value>) -> BoxedNode<Value> {
         BoxedNode {
             ptr: Some(pool.alloc(Node::new(ch))),
         }

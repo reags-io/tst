@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::mem;
 
-use typed_arena::Arena;
+use crate::node::NodeAllocator;
 
 use super::node::{BoxedNode, BoxedNodeRefMut, Node, NodeRef, NodeRefMut};
 
@@ -428,7 +428,7 @@ pub fn search<'x, Value>(mut node: NodeRef<'x, Value>, key: &str) -> Option<&'x 
 pub fn insert<'x, Value>(
     mut node: BoxedNodeRefMut<'x, Value>,
     key: &str,
-    pool: &mut Arena<Node<Value>>,
+    pool: &mut dyn NodeAllocator<Value>,
 ) -> &'x mut Node<Value> {
     let mut last = Default::default();
 
